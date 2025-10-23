@@ -66,18 +66,18 @@ pipeline {
     }
 
     stage("Build & Push Docker Image") {
-      steps {
-        script {
-          echo "Building Docker image..."
-          sh 'ls -la'
+            steps {
+                script {
+                    docker.withRegistry('',DOCKER_PASS) {
+                        docker_image = docker.build "${IMAGE_NAME}"
+                    }
 
-          docker.withRegistry("https://index.docker.io/v1/", DOCKER_PASS) {
-            def image = docker.build("${IMAGE_NAME}:${BUILD_NUMBER}", ".")
-            image.push()
-            image.push("latest")
-          }
-        }
-      }
+                    docker.withRegistry('',DOCKER_PASS) {
+                        docker_image.push("${IMAGE_TAG}")
+                        docker_image.push('latest')
+                    }
+                }
+            }
     }
 
     stage("Deploy") {
