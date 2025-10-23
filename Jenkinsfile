@@ -1,38 +1,52 @@
 pipeline {
   agent { label 'Jenkins-Agent' }
+
   tools {
     jdk 'Java17'
     maven 'Maven3'
   }
+
   environment {
-	  APP_NAME = "text-editor"
-      RELEASE = "1.0.0"
-      DOCKER_USER = "neelbishnoi"
-      DOCKER_PASS = 'dockerhub'
-      IMAGE_NAME = "${DOCKER_USER}" + "/" + "${APP_NAME}"
-      IMAGE_TAG = "${RELEASE}-${BUILD_NUMBER}"
+    APP_NAME = "text-editor"
+    RELEASE = "1.0.0"
+    DOCKER_USER = "neelbishnoi"
+    DOCKER_PASS = credentials('dockerhub')  // store DockerHub password/token in Jenkins credentials
+    DOCKER_BUILDKIT = 1
+    IMAGE_NAME = "${DOCKER_USER}/${APP_NAME}"
   }
+
   stages {
-    stage("Cleanup Workspace"){
+    stage("Cleanup Workspace") {
       steps {
         cleanWs()
       }
     }
-    stage("Checkout from SCM"){
+
+    stage("Checkout from SCM") {
       steps {
         git branch: 'main', credentialsId: 'github', url: 'https://github.com/Neel-29/Comprehensive-Text-Editor'
       }
     }
-    stage("Build Application"){
+
+    stage("Verify Files") {
       steps {
-        sh "mvn clean package"
+        echo "Checking workspace structure..."
+        sh 'ls -la'
       }
     }
-    stage("Test Application"){
+
+    stage("Build Application") {
+      steps {
+        sh "mvn clean package -DskipTests"
+      }
+    }
+
+    stage("Test Application") {
       steps {
         sh "mvn test"
       }
     }
+
     stage("SonarQube Analysis") {
       steps {
         script {
@@ -42,6 +56,7 @@ pipeline {
         }
       }
     }
+
     stage("Quality Gate") {
       steps {
         script {
@@ -49,61 +64,35 @@ pipeline {
         }
       }
     }
+
     stage("Build & Push Docker Image") {
-            steps {
-                script {
-                    docker.withRegistry('',DOCKER_PASS) {
-                        docker_image = docker.build "${IMAGE_NAME}"
-                    }
+      steps {
+        script {
+          echo "Building Docker image..."
+          sh 'ls -la'
 
-                    docker.withRegistry('',DOCKER_PASS) {
-                        docker_image.push("${IMAGE_TAG}")
-                        docker_image.push('latest')
-                    }
-                }
-            }
-       }
+          docker.withRegistry("https://index.docker.io/v1/", DOCKER_PASS) {
+            def image = docker.build("${IMAGE_NAME}:${BUILD_NUMBER}", ".")
+            image.push()
+            image.push("latest")
+          }
+        }
+      }
+    }
 
-       // stage("Trivy Scan") {
-       //     steps {
-       //         script {
-	      //       sh ('docker run -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image ashfaque9x/register-app-pipeline:latest --no-progress --scanners vuln  --exit-code 0 --severity HIGH,CRITICAL --format table')
-       //         }
-       //     }
-       // }
-
-       // stage ('Cleanup Artifacts') {
-       //     steps {
-       //         script {
-       //              sh "docker rmi ${IMAGE_NAME}:${IMAGE_TAG}"
-       //              sh "docker rmi ${IMAGE_NAME}:latest"
-       //         }
-       //    }
-       // }
-
-       // stage("Trigger CD Pipeline") {
-       //      steps {
-       //          script {
-       //              sh "curl -v -k --user clouduser:${JENKINS_API_TOKEN} -X POST -H 'cache-control: no-cache' -H 'content-type: application/x-www-form-urlencoded' --data 'IMAGE_TAG=${IMAGE_TAG}' 'ec2-13-232-128-192.ap-south-1.compute.amazonaws.com:8080/job/gitops-register-app-cd/buildWithParameters?token=gitops-token'"
-       //          }
-       //      }
-       // }
     stage("Deploy") {
       steps {
         echo "Deploying the application..."
       }
     }
   }
-  // post {
-  //      failure {
-  //            emailext body: '''${SCRIPT, template="groovy-html.template"}''', 
-  //                     subject: "${env.JOB_NAME} - Build # ${env.BUILD_NUMBER} - Failed", 
-  //                     mimeType: 'text/html',to: "ashfaque.s510@gmail.com"
-  //     }
-  //     success {
-  //           emailext body: '''${SCRIPT, template="groovy-html.template"}''', 
-  //                    subject: "${env.JOB_NAME} - Build # ${env.BUILD_NUMBER} - Successful", 
-  //                    mimeType: 'text/html',to: "ashfaque.s510@gmail.com"
-  //     }      
-  //  }
+
+  post {
+    success {
+      echo "✅ Build succeeded and image pushed successfully."
+    }
+    failure {
+      echo "❌ Build failed. Check logs for details."
+    }
+  }
 }
