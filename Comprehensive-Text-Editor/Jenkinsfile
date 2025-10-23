@@ -33,13 +33,13 @@ pipeline {
       steps {
         echo "Checking workspace structure..."
         sh 'ls -la'
-        sh 'ls -la webapp || true'
+        sh 'ls -la target || true'
       }
     }
 
     stage("Build Application") {
       steps {
-        sh "mvn clean package -DskipTests"
+        sh "mvn -B clean package -DskipTests"
       }
     }
 
@@ -71,11 +71,11 @@ pipeline {
       steps {
         script {
           sh '''
-            if ls webapp/target/*.war 1> /dev/null 2>&1; then
-              echo "WAR found: $(ls webapp/target/*.war)"
+            if ls target/*.war 1> /dev/null 2>&1; then
+              echo "WAR found: $(ls target/*.war)"
             else
-              echo "ERROR: WAR not found in webapp/target"
-              ls -la webapp/target || true
+              echo "ERROR: WAR not found in target/"
+              ls -la target || true
               exit 1
             fi
           '''

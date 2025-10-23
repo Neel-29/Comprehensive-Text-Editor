@@ -3,19 +3,20 @@ FROM openjdk:17-jdk-slim
 # Set the working directory
 WORKDIR /app
 
+FROM maven:3.8.8-openjdk-17 AS builder
+WORKDIR /workspace
+
 # Copy the Maven project files
 COPY pom.xml .
 COPY src ./src
 
 # Package the application
-RUN mvn clean package -DskipTests
+RUN mvn -B clean package -DskipTests
 
-# Copy the WAR file to the webapps directory
-RUN mkdir -p /usr/local/tomcat/webapps && \
-    cp target/webapp.war /usr/local/tomcat/webapps/
+FROM tomcat:9.0
+# clean default webapps and copy built WAR as ROOT.war
+RUN rm -rf /usr/local/tomcat/webapps/*
+COPY --from=builder /workspace/target/*.war /usr/local/tomcat/webapps/ROOT.war
 
-# Expose the port the app runs on
 EXPOSE 8080
-
-# Start the Tomcat server
 CMD ["catalina.sh", "run"]
