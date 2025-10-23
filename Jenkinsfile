@@ -30,5 +30,14 @@ pipeline {
         echo "Deploying the application..."
       }
     }
+    stage("SoanrQube Analysis") {
+      steps {
+        script {
+          withSonarQubeEnv(credentialsId: 'jenkins-sonarqube-token') {
+            sh "mvn sonar:sonar"
+          }
+        }
+      }
+    }
   }
 }
