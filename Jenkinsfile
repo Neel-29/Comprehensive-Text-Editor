@@ -18,7 +18,6 @@ pipeline {
     stage("Build Application"){
       steps {
         sh "mvn clean package"
-        archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
       }
     }
     stage("Test Application"){
