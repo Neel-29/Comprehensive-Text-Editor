@@ -70,15 +70,6 @@ pipeline {
     stage("Build & Push Docker Image") {
             steps {
                 script {
-                    sh '''
-                      if ls webapp/target/*.war 1> /dev/null 2>&1; then
-                        echo "WAR found: $(ls webapp/target/*.war)"
-                      else
-                        echo "ERROR: WAR not found in webapp/target"
-                        ls -la webapp/target || true
-                        exit 1
-                      fi
-                    '''
                     docker.withRegistry('',DOCKER_PASS) {
                         docker_image = docker.build "${IMAGE_NAME}:${IMAGE_TAG}"
                     }
