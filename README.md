@@ -1,5 +1,5 @@
 # Comprehensive Text Editor
-
+First Change To Jenkins->SonarQube->Docker
 ## Overview
 The Comprehensive Text Editor is a Java-based web application designed to provide a rich text editing experience. It leverages modern web technologies and follows best practices in software development.
 
