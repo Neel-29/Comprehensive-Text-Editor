@@ -10,7 +10,7 @@ pipeline {
     APP_NAME = "text-editor"
     RELEASE = "1.0.0"
     DOCKER_USER = "neelbishnoi"
-    DOCKER_PASS = credentials('dockerhub')  // store DockerHub password/token in Jenkins credentials
+    DOCKER_PASS = 'dockerhub'
     DOCKER_BUILDKIT = 1
     IMAGE_NAME = "${DOCKER_USER}/${APP_NAME}"
   }
