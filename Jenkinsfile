@@ -93,10 +93,9 @@ pipeline {
 
     stage("Deploy") {
       steps {
-        steps {
-          echo "Deploying the application..."
-          script {
-          // Use the IMAGE_NAME defined in your environment block
+        echo "Deploying the application..."
+        
+        script {
           def containerName = "${APP_NAME}"
           def imageName = "${IMAGE_NAME}:${IMAGE_TAG}"
 
@@ -108,13 +107,9 @@ pipeline {
             # Pull the new image from Docker Hub
             docker pull ${imageName}
             
-            # Run the new container
-            # -d = run in detached mode
-            # -p 8080:8080 = map host port 8080 to container port 8080
-            # --name = give the container a static name for easy management
-            docker run -d -p 8080:8080 --name ${containerName} ${imageName}
+            # Run the new container, mapping port 8081 (host) to 8080 (container)
+            docker run -d -p 8081:8080 --name ${containerName} ${imageName}
           """
-          }
         }
       }
     }
