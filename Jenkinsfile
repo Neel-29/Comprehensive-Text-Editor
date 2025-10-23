@@ -39,15 +39,13 @@ pipeline {
 
     stage("Build Application") {
       steps {
-        // sh "mvn clean package -DskipTests"
-        sh "mvn -f webapp/pom.xml clean package -DskipTests"
+        sh "mvn clean package -DskipTests"
       }
     }
 
     stage("Test Application") {
       steps {
-        // sh "mvn test"
-        sh "mvn -f webapp/pom.xml test"
+        sh "mvn test"
       }
     }
 
