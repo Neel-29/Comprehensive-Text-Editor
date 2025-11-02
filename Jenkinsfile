@@ -39,7 +39,6 @@ pipeline {
 
     stage("Build Application") {
       steps {
-        sh "mv Comprehensive-Text-Editor/src ."
         sh "mvn -B clean package -DskipTests"
       }
     }
