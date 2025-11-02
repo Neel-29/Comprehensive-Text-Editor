@@ -1,4 +1,4 @@
-# Comprehensive Text Editor
+# Comprehensive Text Editor Connected with jenkins-agent
 Path: Git->Jenkins->SonarQube->Docker->Kubernets
 ## Overview
 The Comprehensive Text Editor is a Java-based web application designed to provide a rich text editing experience. It leverages modern web technologies and follows best practices in software development.
